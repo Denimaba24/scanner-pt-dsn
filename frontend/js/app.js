@@ -1,5 +1,5 @@
 // Konfigurasi URL Backend Anda
-const API_URL = "http://localhost:3000/api";
+const API_URL = "http://192.168.0.114:3000/api";
 
 // State Data Global
 let allData = [];
