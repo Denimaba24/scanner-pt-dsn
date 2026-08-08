@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover"
+    />
+    <title>Scanner - PT. Daya Sakti Niaga</title>
+
+    <!-- Font & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Library Pendukung -->
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- LINK KE FILE CSS KITA -->
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="topbar-title">
+        <i class="fas fa-qrcode"></i> PT. Daya Sakti Niaga
+      </div>
+      <div class="typewriter-container">
+        <div class="typewriter-text">
+          PT. DAYA SAKTI NIAGA - Jl. Kapten Darmo Sugondo No.2, Indro,
+          Karangkering, Kec. Kebomas, Kabupaten Gresik, Jawa Timur 61123
+        </div>
+      </div>
+    </div>
+
+    <div class="pull-indicator" id="pullIndicator">
+      <i class="fas fa-arrow-down"></i> LEPAS UNTUK REFRESH...
+    </div>
+
+    <div class="container">
+      <div id="view-scan" class="view-page active">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-camera-viewfinder"></i> LANCAR JAYAAAA
+          </div>
+          <div class="scanner-wrapper">
+            <div class="scanner-container" id="scannerBox">
+              <div class="scanner-placeholder" id="placeholderMsg">
+                <i class="fas fa-video-slash"></i><span>Kamera Siaga</span>
+              </div>
+              <video
+                id="videoElement"
+                autoplay
+                playsinline
+                muted
+                webkit-playsinline
+              ></video>
+              <div class="targeting-box" id="targetBox">
+                <div class="targeting-box-inner"></div>
+              </div>
+              <div class="laser-overlay" id="laser"></div>
+            </div>
+            <div class="floating-controls">
+              <button
+                class="btn btn-icon btn-res"
+                id="btnRes"
+                onclick="toggleResolution()"
+              >
+                <span
+                  id="resText"
+                  style="
+                    font-size: 0.75rem;
+                    font-family: &quot;Space Grotesk&quot;, monospace;
+                    font-weight: 800;
+                  "
+                  >HD</span
+                >
+              </button>
+              <button
+                class="btn btn-icon"
+                id="btnTorch"
+                onclick="toggleTorch()"
+              >
+                <i class="fas fa-bolt"></i>
+              </button>
+              <button
+                class="btn btn-scan"
+                id="btnAction"
+                onclick="toggleScan()"
+              >
+                <i class="fas fa-play" style="margin-right: 8px"></i> MULAI
+              </button>
+              <button class="btn btn-icon" onclick="switchCamera()">
+                <i class="fas fa-camera-rotate"></i>
+              </button>
+            </div>
+          </div>
+          <div class="input-group" style="margin-top: 15px; margin-bottom: 0">
+            <label>Input Manual</label>
+            <div class="manual-input-wrapper">
+              <input
+                type="text"
+                id="manualData"
+                class="form-control"
+                placeholder="Ketik serial barcode..."
+                inputmode="text"
+              />
+              <button class="btn btn-add" onclick="inputManual()">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-session" class="view-page">
+        <div class="card">
+          <div class="card-header hdr-b1">
+            <i class="fas fa-cube"></i> Scan Hari ini - Barcode 1
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode</th>
+                  <th>Log</th>
+                  <th>Bundle</th>
+                  <th>Panjang</th>
+                  <th>Lebar</th>
+                  <th>PCS</th>
+                  <th>M²</th>
+                  <th>Waktu</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableToday1"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header hdr-b2">
+            <i class="fas fa-cube"></i> Scan Hari ini - Barcode 2
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode</th>
+                  <th>Log</th>
+                  <th>Bundle</th>
+                  <th>Panjang</th>
+                  <th>Lebar</th>
+                  <th>PCS</th>
+                  <th>M²(SM)</th>
+                  <th>Waktu</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableToday2"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header hdr-b3">
+            <i class="fas fa-cube"></i> Scan Hari ini - Barcode 3
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode</th>
+                  <th>Log</th>
+                  <th>Bundle</th>
+                  <th>Panjang</th>
+                  <th>Lebar</th>
+                  <th>PCS</th>
+                  <th>M²</th>
+                  <th>Waktu</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableToday3"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-database" class="view-page">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-filter"></i> Filter Master Database
+          </div>
+          <div
+            class="filter-grid"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+          >
+            <div class="input-group" style="margin-bottom: 0">
+              <label>Mulai Tanggal</label
+              ><input
+                type="date"
+                class="form-control"
+                id="start"
+                onchange="renderDatabase()"
+              />
+            </div>
+            <div class="input-group" style="margin-bottom: 0">
+              <label>Sampai Tanggal</label
+              ><input
+                type="date"
+                class="form-control"
+                id="end"
+                onchange="renderDatabase()"
+              />
+            </div>
+          </div>
+          <div class="input-group" style="margin-top: 16px; margin-bottom: 0">
+            <label>Pencarian Spesifik</label
+            ><input
+              type="search"
+              class="form-control"
+              id="search"
+              placeholder="Cari serial / LOG / BUNDLE..."
+              onkeyup="renderDatabase()"
+            />
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header hdr-b1">
+            <i class="fas fa-server"></i> Database - Barcode 1
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode</th>
+                  <th>Log</th>
+                  <th>Bundle</th>
+                  <th>Panjang</th>
+                  <th>Lebar</th>
+                  <th>PCS</th>
+                  <th>M²</th>
+                  <th>Tgl</th>
+                  <th>Jam</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableDb1"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header hdr-b2">
+            <i class="fas fa-server"></i> Database - Barcode 2
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode</th>
+                  <th>Log</th>
+                  <th>Bundle</th>
+                  <th>Panjang</th>
+                  <th>Lebar</th>
+                  <th>PCS</th>
+                  <th>M²(SM)</th>
+                  <th>Tgl</th>
+                  <th>Jam</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableDb2"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header hdr-b3">
+            <i class="fas fa-server"></i> Database - Barcode 3
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Kode</th>
+                  <th>Log</th>
+                  <th>Bundle</th>
+                  <th>Panjang</th>
+                  <th>Lebar</th>
+                  <th>PCS</th>
+                  <th>M²</th>
+                  <th>Tgl</th>
+                  <th>Jam</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tableDb3"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-export" class="view-page">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-file-export"></i> Pusat Unduhan & Share Laporan
+          </div>
+
+          <label
+            style="
+              display: block;
+              font-size: 0.75rem;
+              font-weight: 800;
+              color: #38bdf8;
+              margin-bottom: 12px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            "
+            >Laporan Sesi Hari Ini</label
+          >
+          <div class="export-grid">
+            <button
+              class="btn btn-export-big"
+              onclick="actionPrompt('excel', 'harian')"
+            >
+              <img
+                src="https://lh3.googleusercontent.com/d/1jKqTVOd3Su5O4XZmLX1JtNcd7XC6BELz"
+                class="icon-original"
+                alt="Excel"
+              />
+              <div>Data Excel Harian</div>
+            </button>
+            <button
+              class="btn btn-export-big"
+              onclick="actionPrompt('pdf', 'harian')"
+            >
+              <img
+                src="https://lh3.googleusercontent.com/d/1XuYRpVVy1ZYzxDRVboXtRQUBTxPe0yF6"
+                class="icon-original"
+                alt="PDF"
+              />
+              <div>Data PDF Harian</div>
+            </button>
+          </div>
+
+          <label
+            style="
+              display: block;
+              font-size: 0.75rem;
+              font-weight: 800;
+              color: #38bdf8;
+              margin-bottom: 12px;
+              margin-top: 20px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            "
+            >Laporan Seluruh Database</label
+          >
+          <div class="export-grid">
+            <button
+              class="btn btn-export-big"
+              onclick="actionPrompt('excel', 'semua')"
+            >
+              <img
+                src="https://lh3.googleusercontent.com/d/1jKqTVOd3Su5O4XZmLX1JtNcd7XC6BELz"
+                class="icon-original"
+                alt="Excel"
+              />
+              <div>Master Excel Database</div>
+            </button>
+            <button
+              class="btn btn-export-big"
+              onclick="actionPrompt('pdf', 'semua')"
+            >
+              <img
+                src="https://lh3.googleusercontent.com/d/1XuYRpVVy1ZYzxDRVboXtRQUBTxPe0yF6"
+                class="icon-original"
+                alt="PDF"
+              />
+              <div>Master PDF Database</div>
+            </button>
+          </div>
+
+          <hr
+            style="
+              border: none;
+              border-top: 1px solid rgba(255, 255, 255, 0.1);
+              margin: 30px 0 20px 0;
+            "
+          />
+          <button
+            class="btn btn-export-big btn-danger-zone"
+            onclick="hapusSemuaData()"
+          >
+            <i class="fas fa-trash-can"></i>
+            <div>Hapus Total Seluruh Database</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <a class="nav-item active" onclick="switchPage('view-scan', this)"
+        ><img
+          src="https://img.icons8.com/material-rounded/96/ffffff/barcode-scanner.png"
+          class="nav-img"
+          alt="Scanner"
+        /><span>SCANNER</span></a
+      >
+      <a class="nav-item" onclick="switchPage('view-session', this)"
+        ><img
+          src="https://img.icons8.com/material-rounded/96/ffffff/today.png"
+          class="nav-img"
+          alt="Hari Ini"
+        /><span>HARI INI</span></a
+      >
+      <a class="nav-item" onclick="switchPage('view-database', this)"
+        ><img
+          src="https://img.icons8.com/material-rounded/96/ffffff/database.png"
+          class="nav-img"
+          alt="Database"
+        /><span>DATABASE</span></a
+      >
+      <a class="nav-item" onclick="switchPage('view-export', this)"
+        ><img
+          src="https://img.icons8.com/material-rounded/96/ffffff/download--v1.png"
+          class="nav-img"
+          alt="Unduh"
+        /><span>UNDUH</span></a
+      >
+    </nav>
+
+    <!-- LINK KE FILE JS KITA -->
+    <script src="js/app.js"></script>
+  </body>
+</html>
