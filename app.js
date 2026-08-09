@@ -1,5 +1,5 @@
 // Konfigurasi URL Backend Anda
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://scanner-pt-dsn-new.vercel.app/api/scans";
 
 // State Data Global
 let allData = [];
