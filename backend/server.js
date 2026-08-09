@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
+require("dotenv").config(); // <-- MODUL KEAMANAN DIAKTIFKAN
 
 const app = express();
 const PORT = 3000;
@@ -8,14 +9,20 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Konfigurasi Koneksi Database MySQL (Bawaan XAMPP)
+// Konfigurasi Database dengan Variabel Lingkungan (Aman)
 const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "db_scanner_dsn",
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
   dateStrings: true,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
+
+// ... (Biarkan semua kode app.get, app.post, dll ke bawah tetap sama seperti sebelumnya) ...
 
 // --- API ROUTES UNTUK RIWAYAT SCAN ---
 app.get("/api/scans", async (req, res) => {
@@ -149,6 +156,6 @@ app.post("/api/master", async (req, res) => {
 
 // Jalankan Server
 app.listen(PORT, () => {
-  console.log(`🚀 Backend server berjalan di http://localhost:${PORT}`);
-  console.log(`✅ Server kini TERHUBUNG secara langsung ke MySQL XAMPP!`);
+  console.log(`🚀 Backend server berjalan di port ${PORT}`);
+  console.log(`✅ Server kini TERHUBUNG secara langsung ke MySQL Aiven Cloud!`);
 });
